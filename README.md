@@ -55,25 +55,6 @@ Each suspicious network includes:
 - Password modal
 - Auto scan
 
----
-
-# 🖥️ Screenshots
-
-> Add screenshots here
-
-```
-Landing Page
-
-Scanner Dashboard
-
-Threat Detection
-
-Password Popup
-
-Connected Network
-
-Scan History
-```
 
 ---
 
@@ -305,4 +286,4 @@ This project is licensed under the MIT License.
 
 ## 🌟 TwinGuard
 
-**Protecting users from Fake Wi-Fi threats — one network at a time.**
+**Protecting users from Fake Wi-Fi threats - one network at a time.**
