@@ -1,0 +1,1118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>TwinGuard • WiFi Scanner</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+:root{
+  --bg:#f5f3ef;--white:#fff;--navy:#0f2545;--navy2:#1a3a6e;
+  --blue:#2563eb;--blue-light:#dbeafe;--red:#dc2626;--red-light:#fee2e2;
+  --green:#16a34a;--green-light:#dcfce7;--amber:#d97706;--amber-light:#fef3c7;
+  --text:#0f172a;--text2:#334155;--muted:#64748b;--border:#e2e8f0;--border2:#cbd5e1;
+}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;}
+
+/* NAV */
+nav{background:white;border-bottom:1px solid var(--border);padding:0 6%;height:64px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50;}
+.logo{display:flex;align-items:center;gap:10px;text-decoration:none;}
+.logo-mark{width:34px;height:34px;background:var(--navy);border-radius:7px;display:flex;align-items:center;justify-content:center;color:white;font-size:0.9rem;}
+.logo-text{font-family:'DM Serif Display',serif;font-size:1.2rem;color:var(--navy);}
+.logo-text span{color:var(--blue);}
+.nav-back{color:var(--muted);text-decoration:none;font-size:0.88rem;font-weight:500;display:flex;align-items:center;gap:6px;transition:color 0.2s;}
+.nav-back:hover{color:var(--navy);}
+
+.page{max-width:1100px;margin:0 auto;padding:2.5rem 6%;}
+.page-header{margin-bottom:2rem;}
+.page-title{font-family:'DM Serif Display',serif;font-size:2rem;color:var(--navy);margin-bottom:0.3rem;}
+.page-sub{font-size:0.95rem;color:var(--muted);font-weight:300;}
+
+/* CONNECTED BANNER */
+.connected-banner{display:flex;align-items:center;gap:1.25rem;background:white;border:1px solid var(--border);border-radius:12px;padding:1.1rem 1.5rem;margin-bottom:1.75rem;box-shadow:0 2px 10px rgba(15,37,69,0.05);transition:border-color 0.3s,box-shadow 0.3s;}
+.connected-banner.is-connected{border-color:#bbf7d0;box-shadow:0 2px 16px rgba(22,163,74,0.1);}
+.connected-banner.is-at-risk{border-color:#fca5a5;box-shadow:0 2px 16px rgba(220,38,38,0.1);}
+.cb-icon{width:44px;height:44px;border-radius:10px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:1.1rem;}
+.cb-icon.connected{background:var(--green-light);color:var(--green);}
+.cb-icon.at-risk{background:var(--red-light);color:var(--red);}
+.cb-icon.disconnected{background:var(--border);color:var(--muted);}
+.cb-body{flex:1;min-width:0;}
+.cb-label{font-size:0.72rem;font-weight:600;text-transform:uppercase;letter-spacing:0.09em;color:var(--muted);margin-bottom:2px;}
+.cb-ssid{font-size:1.05rem;font-weight:700;color:var(--navy);font-family:'DM Serif Display',serif;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.cb-ssid.unknown{color:var(--muted);font-style:italic;font-size:0.95rem;}
+.cb-meta{font-size:0.8rem;color:var(--muted);margin-top:2px;}
+.cb-right{display:flex;align-items:center;gap:0.75rem;flex-shrink:0;}
+.cb-pill{padding:0.35rem 1rem;border-radius:100px;font-size:0.75rem;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;}
+.cb-pill.connected{background:var(--green-light);color:var(--green);}
+.cb-pill.at-risk{background:var(--red-light);color:var(--red);}
+.cb-pill.disconnected{background:var(--border);color:var(--muted);}
+.disconnect-btn{padding:0.38rem 0.9rem;border:1.5px solid var(--red);border-radius:7px;background:white;color:var(--red);font-size:0.8rem;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;display:flex;align-items:center;gap:6px;transition:all 0.2s;}
+.disconnect-btn:hover{background:var(--red-light);}
+
+/* CONTROLS BAR */
+.controls-bar{display:flex;align-items:center;gap:0.85rem;margin-bottom:2rem;flex-wrap:wrap;}
+.btn{padding:0.7rem 1.5rem;border:none;border-radius:7px;cursor:pointer;font-size:0.95rem;font-weight:600;display:flex;align-items:center;gap:8px;background:var(--navy);color:white;font-family:'DM Sans',sans-serif;transition:all 0.2s;box-shadow:0 2px 8px rgba(15,37,69,0.2);}
+.btn:hover{background:var(--navy2);transform:translateY(-1px);}
+.btn:disabled{opacity:0.55;cursor:not-allowed;transform:none;}
+.btn.auto-active{background:var(--green);box-shadow:0 2px 8px rgba(22,163,74,0.3);}
+.btn.auto-active:hover{background:#15803d;}
+.btn-outline-sm{padding:0.55rem 1.1rem;border:1.5px solid var(--border2);border-radius:7px;cursor:pointer;font-size:0.85rem;font-weight:600;display:flex;align-items:center;gap:7px;background:white;color:var(--navy);font-family:'DM Sans',sans-serif;transition:all 0.2s;}
+.btn-outline-sm:hover{border-color:var(--navy);background:#f8fafc;}
+.btn-outline-sm:disabled{opacity:0.45;cursor:not-allowed;}
+
+/* AUTO-REFRESH */
+.refresh-control{display:flex;align-items:center;gap:0.6rem;background:white;border:1px solid var(--border);border-radius:8px;padding:0.45rem 0.9rem;}
+.refresh-toggle-label{font-size:0.82rem;font-weight:600;color:var(--text2);white-space:nowrap;}
+.toggle-switch{position:relative;display:inline-block;width:36px;height:20px;}
+.toggle-switch input{opacity:0;width:0;height:0;}
+.toggle-slider{position:absolute;inset:0;background:var(--border2);border-radius:20px;cursor:pointer;transition:background 0.2s;}
+.toggle-slider:before{content:"";position:absolute;width:14px;height:14px;left:3px;top:3px;background:white;border-radius:50%;transition:transform 0.2s;}
+.toggle-switch input:checked + .toggle-slider{background:var(--blue);}
+.toggle-switch input:checked + .toggle-slider:before{transform:translateX(16px);}
+.refresh-sep{width:1px;height:18px;background:var(--border);margin:0 2px;}
+.interval-select{border:none;background:transparent;font-size:0.82rem;color:var(--muted);font-family:'DM Sans',sans-serif;cursor:pointer;outline:none;padding:0 2px;}
+.interval-select:disabled{opacity:0.5;cursor:not-allowed;}
+.refresh-countdown{font-size:0.78rem;color:var(--blue);font-weight:600;min-width:28px;text-align:right;}
+.last-update{font-size:0.85rem;color:var(--muted);display:flex;align-items:center;gap:6px;}
+.status-dot{width:8px;height:8px;border-radius:50%;background:var(--border2);}
+.status-dot.active{background:var(--green);box-shadow:0 0 0 3px var(--green-light);animation:blink 1.5s ease-in-out infinite;}
+@keyframes blink{0%,100%{opacity:1;}50%{opacity:0.5;}}
+
+/* STAT CARDS */
+.stat-row{display:grid;grid-template-columns:repeat(3,1fr);gap:1rem;margin-bottom:2rem;}
+.stat-card{background:white;border:1px solid var(--border);border-radius:10px;padding:1.25rem 1.5rem;display:flex;align-items:center;gap:1rem;}
+.stat-icon{width:40px;height:40px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:1rem;flex-shrink:0;}
+.si-total{background:var(--blue-light);color:var(--blue);}
+.si-safe{background:var(--green-light);color:var(--green);}
+.si-threat{background:var(--red-light);color:var(--red);}
+.stat-card-num{font-family:'DM Serif Display',serif;font-size:1.8rem;color:var(--navy);line-height:1;}
+.stat-card-label{font-size:0.78rem;color:var(--muted);font-weight:400;margin-top:1px;}
+
+/* TABLE */
+.table-wrap{background:white;border:1px solid var(--border);border-radius:12px;overflow:hidden;box-shadow:0 2px 12px rgba(15,37,69,0.06);margin-bottom:2rem;}
+.table-head-bar{padding:1rem 1.5rem;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;gap:1rem;flex-wrap:wrap;}
+.table-head-bar h3{font-size:0.95rem;font-weight:600;color:var(--navy);}
+.scan-time-label{font-size:0.8rem;color:var(--muted);}
+table{width:100%;border-collapse:collapse;}
+th{padding:0.75rem 1rem;background:#f8fafc;border-bottom:1px solid var(--border);text-align:left;font-size:0.75rem;font-weight:600;text-transform:uppercase;letter-spacing:0.08em;color:var(--muted);}
+td{padding:0.8rem 1rem;border-bottom:1px solid var(--border);font-size:0.88rem;color:var(--text2);vertical-align:middle;}
+tbody tr:last-child td{border-bottom:none;}
+tbody tr{transition:background 0.15s;}
+tbody tr:hover{background:#fafbfc;}
+
+/* STATUS BADGES */
+.status-safe{display:inline-flex;align-items:center;gap:5px;padding:3px 10px;border-radius:100px;background:var(--green-light);color:var(--green);font-size:0.75rem;font-weight:700;text-transform:uppercase;letter-spacing:0.04em;}
+.status-warning{display:inline-flex;align-items:center;gap:5px;padding:3px 10px;border-radius:100px;background:var(--red-light);color:var(--red);font-size:0.75rem;font-weight:700;text-transform:uppercase;letter-spacing:0.04em;}
+.status-info{display:inline-flex;align-items:center;gap:5px;padding:3px 10px;border-radius:100px;background:var(--blue-light);color:var(--blue);font-size:0.75rem;font-weight:700;text-transform:uppercase;letter-spacing:0.04em;}
+.status-amber{display:inline-flex;align-items:center;gap:5px;padding:3px 10px;border-radius:100px;background:var(--amber-light);color:var(--amber);font-size:0.75rem;font-weight:700;text-transform:uppercase;letter-spacing:0.04em;}
+
+td strong{color:var(--text);font-weight:600;}
+td .mac{font-family:monospace;font-size:0.82rem;color:var(--muted);}
+td .channel{font-weight:600;color:var(--navy);}
+tbody tr.row-threat td{background:#fff5f5;}
+tbody tr.row-threat:hover td{background:#fff0f0;}
+tbody tr.row-amber td{background:#fffbeb;}
+tbody tr.row-amber:hover td{background:#fef9e7;}
+
+/* ── THREAT REASON CHIP ── */
+.reason-chip{
+  display:inline-flex;align-items:center;gap:5px;
+  padding:4px 10px;border-radius:6px;
+  font-size:0.72rem;font-weight:600;
+  cursor:pointer;border:1px solid transparent;
+  transition:all 0.15s;white-space:nowrap;
+  line-height:1.3;
+}
+.reason-chip.chip-red{
+  background:var(--red-light);color:var(--red);border-color:#fca5a5;
+}
+.reason-chip.chip-red:hover{background:#fee2e2;border-color:var(--red);box-shadow:0 1px 6px rgba(220,38,38,0.18);}
+.reason-chip.chip-amber{
+  background:var(--amber-light);color:var(--amber);border-color:#fde68a;
+}
+.reason-chip.chip-amber:hover{background:#fef3c7;border-color:var(--amber);box-shadow:0 1px 6px rgba(217,119,6,0.18);}
+
+/* ── REASON DRAWER (slide-up panel) ── */
+.reason-drawer-backdrop{
+  position:fixed;inset:0;z-index:1200;
+  background:rgba(15,37,69,0.3);
+  backdrop-filter:blur(2px);
+  opacity:0;pointer-events:none;
+  transition:opacity 0.22s;
+}
+.reason-drawer-backdrop.open{opacity:1;pointer-events:all;}
+.reason-drawer{
+  position:fixed;bottom:0;left:0;right:0;z-index:1201;
+  background:white;
+  border-radius:20px 20px 0 0;
+  padding:0;
+  max-height:70vh;
+  box-shadow:0 -8px 40px rgba(15,37,69,0.18);
+  transform:translateY(100%);
+  transition:transform 0.3s cubic-bezier(0.32,0.72,0,1);
+  overflow:hidden;
+}
+.reason-drawer.open{transform:translateY(0);}
+.drawer-handle{width:40px;height:4px;background:var(--border2);border-radius:2px;margin:12px auto 0;}
+.drawer-header{
+  display:flex;align-items:flex-start;justify-content:space-between;
+  padding:1rem 1.5rem 0.85rem;
+  border-bottom:1px solid var(--border);
+  gap:1rem;
+}
+.drawer-header-left{display:flex;align-items:flex-start;gap:0.85rem;}
+.drawer-threat-icon{
+  width:38px;height:38px;border-radius:9px;flex-shrink:0;
+  display:flex;align-items:center;justify-content:center;font-size:0.95rem;
+  margin-top:2px;
+}
+.drawer-threat-icon.red{background:var(--red-light);color:var(--red);}
+.drawer-threat-icon.amber{background:var(--amber-light);color:var(--amber);}
+.drawer-ssid{font-family:'DM Serif Display',serif;font-size:1.1rem;color:var(--navy);margin-bottom:3px;}
+.drawer-status-badge{display:inline-flex;align-items:center;gap:5px;}
+.drawer-close{
+  width:30px;height:30px;border-radius:7px;border:1px solid var(--border);
+  background:var(--bg);cursor:pointer;display:flex;align-items:center;justify-content:center;
+  color:var(--muted);font-size:0.85rem;flex-shrink:0;transition:all 0.15s;
+}
+.drawer-close:hover{background:var(--red-light);color:var(--red);border-color:#fca5a5;}
+.drawer-body{padding:1.25rem 1.5rem;overflow-y:auto;max-height:calc(70vh - 110px);}
+.drawer-section-label{
+  font-size:0.68rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;
+  color:var(--muted);margin-bottom:0.6rem;
+}
+.drawer-reason-text{
+  font-size:0.88rem;color:var(--text2);line-height:1.7;
+  background:var(--bg);border-radius:10px;
+  padding:1rem 1.1rem;border-left:3px solid transparent;
+}
+.drawer-reason-text.red-border{border-color:var(--red);}
+.drawer-reason-text.amber-border{border-color:var(--amber);}
+.drawer-tips{margin-top:1.1rem;}
+.drawer-tip-row{
+  display:flex;align-items:flex-start;gap:0.65rem;
+  padding:0.55rem 0;border-bottom:1px solid var(--border);
+  font-size:0.82rem;color:var(--text2);line-height:1.5;
+}
+.drawer-tip-row:last-child{border-bottom:none;}
+.drawer-tip-icon{flex-shrink:0;margin-top:1px;color:var(--muted);font-size:0.8rem;width:16px;text-align:center;}
+
+/* ── CONNECT BUTTON IN TABLE ─── */
+.connect-cell{white-space:nowrap;}
+.tbl-connect-btn{
+  padding:0.32rem 0.85rem;border-radius:6px;border:1.5px solid var(--border2);
+  background:white;color:var(--navy);font-size:0.78rem;font-weight:700;
+  cursor:pointer;font-family:'DM Sans',sans-serif;
+  display:inline-flex;align-items:center;gap:5px;
+  transition:all 0.18s;
+}
+.tbl-connect-btn:hover{background:var(--green-light);border-color:var(--green);color:var(--green);}
+.tbl-connect-btn.danger:hover{background:var(--red-light);border-color:var(--red);color:var(--red);}
+.tbl-connect-btn.connected-now{background:var(--green-light);border-color:var(--green);color:var(--green);pointer-events:none;}
+
+/* LOADING / EMPTY */
+.loading{text-align:center;padding:4rem 2rem;color:var(--muted);font-size:0.9rem;}
+.loading i{color:var(--blue);display:block;margin-bottom:0.75rem;font-size:1.5rem;}
+.load-bar{width:200px;height:3px;background:var(--border);border-radius:3px;margin:1.25rem auto 0;overflow:hidden;}
+.load-bar-inner{height:100%;width:35%;background:linear-gradient(90deg,var(--blue),#06b6d4);border-radius:3px;animation:slide 1.4s ease-in-out infinite;}
+@keyframes slide{0%{transform:translateX(-100%);}100%{transform:translateX(400%);}}
+.empty-state{text-align:center;padding:4rem 2rem;color:var(--muted);font-size:0.9rem;}
+.empty-state i{display:block;margin-bottom:0.75rem;font-size:1.5rem;color:var(--border2);}
+.hidden{display:none;}
+
+/* ── SCAN HISTORY ── */
+.history-section{background:white;border:1px solid var(--border);border-radius:14px;overflow:hidden;box-shadow:0 2px 12px rgba(15,37,69,0.06);margin-bottom:2rem;}
+.history-header{display:flex;align-items:center;justify-content:space-between;padding:1.1rem 1.5rem;border-bottom:1px solid var(--border);cursor:pointer;user-select:none;}
+.history-header-left{display:flex;align-items:center;gap:10px;}
+.history-header-icon{width:34px;height:34px;border-radius:8px;background:#f1f5ff;color:var(--blue);display:flex;align-items:center;justify-content:center;font-size:0.85rem;flex-shrink:0;}
+.history-header h3{font-size:0.9rem;font-weight:700;color:var(--navy);}
+.history-header-sub{font-size:0.78rem;color:var(--muted);margin-top:1px;}
+.history-chevron{width:28px;height:28px;border-radius:6px;border:1px solid var(--border);display:flex;align-items:center;justify-content:center;color:var(--muted);font-size:0.8rem;transition:all 0.2s;background:var(--bg);}
+.history-header:hover .history-chevron{background:var(--blue-light);color:var(--blue);border-color:#bfdbfe;}
+.history-chevron.open{transform:rotate(180deg);}
+.history-body{padding:1rem 1.5rem;}
+.history-empty{text-align:center;padding:2rem;color:var(--muted);font-size:0.85rem;}
+.history-empty i{display:block;margin-bottom:0.5rem;font-size:1.2rem;color:var(--border2);}
+.history-timeline{display:flex;flex-direction:column;gap:0;}
+.history-item{display:flex;align-items:stretch;gap:0;}
+.history-item:last-child .ht-line{display:none;}
+.ht-spine{display:flex;flex-direction:column;align-items:center;width:32px;flex-shrink:0;padding-top:4px;}
+.ht-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0;margin-top:2px;}
+.ht-dot.safe{background:var(--green);}
+.ht-dot.threat{background:var(--red);}
+.ht-line{width:2px;flex:1;background:var(--border);margin-top:4px;min-height:18px;}
+.ht-content{flex:1;padding:0 0 1.1rem 0.5rem;}
+.ht-row{display:flex;align-items:center;justify-content:space-between;gap:0.75rem;flex-wrap:wrap;}
+.ht-time{font-size:0.78rem;color:var(--muted);font-weight:500;}
+.ht-badges{display:flex;gap:0.4rem;flex-wrap:wrap;}
+.ht-badge{font-size:0.7rem;font-weight:700;padding:2px 8px;border-radius:100px;text-transform:uppercase;letter-spacing:0.04em;}
+.ht-badge.total{background:var(--blue-light);color:var(--blue);}
+.ht-badge.safe{background:var(--green-light);color:var(--green);}
+.ht-badge.threat{background:var(--red-light);color:var(--red);}
+.ht-threats{font-size:0.8rem;color:var(--red);font-weight:500;margin-top:3px;}
+.ht-threats span{font-family:monospace;font-size:0.75rem;}
+.ht-clean{font-size:0.8rem;color:var(--muted);margin-top:3px;}
+.history-clear-btn{font-size:0.75rem;color:var(--muted);background:none;border:none;cursor:pointer;font-family:'DM Sans',sans-serif;display:flex;align-items:center;gap:4px;padding:0;transition:color 0.2s;}
+.history-clear-btn:hover{color:var(--red);}
+
+/* SAFETY SECTION */
+.safety-section{background:white;border:1px solid var(--border);border-radius:14px;overflow:hidden;box-shadow:0 2px 12px rgba(15,37,69,0.06);margin-bottom:2rem;}
+.safety-header{display:flex;align-items:center;justify-content:space-between;padding:1.25rem 1.75rem;border-bottom:1px solid var(--border);cursor:pointer;user-select:none;}
+.safety-header-left{display:flex;align-items:center;gap:12px;}
+.safety-header-icon{width:38px;height:38px;border-radius:9px;background:linear-gradient(135deg,#1e40af,#2563eb);display:flex;align-items:center;justify-content:center;color:white;font-size:0.9rem;flex-shrink:0;}
+.safety-header h3{font-size:0.97rem;font-weight:700;color:var(--navy);}
+.safety-header p{font-size:0.8rem;color:var(--muted);margin-top:1px;}
+.safety-toggle{width:30px;height:30px;border-radius:7px;border:1px solid var(--border);display:flex;align-items:center;justify-content:center;color:var(--muted);font-size:0.85rem;transition:all 0.2s;background:var(--bg);}
+.safety-header:hover .safety-toggle{background:var(--blue-light);color:var(--blue);border-color:#bfdbfe;}
+.safety-toggle.open{transform:rotate(180deg);}
+.safety-body{padding:1.75rem;display:grid;grid-template-columns:repeat(2,1fr);gap:1rem;}
+.safety-tip{display:flex;gap:1rem;padding:1.1rem 1.25rem;border-radius:10px;border:1px solid var(--border);background:#fafbff;transition:border-color 0.2s,box-shadow 0.2s;}
+.safety-tip:hover{border-color:#bfdbfe;box-shadow:0 2px 8px rgba(37,99,235,0.08);}
+.tip-icon{width:38px;height:38px;border-radius:9px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:0.9rem;}
+.tip-icon.red{background:var(--red-light);color:var(--red);}
+.tip-icon.amber{background:var(--amber-light);color:var(--amber);}
+.tip-icon.blue{background:var(--blue-light);color:var(--blue);}
+.tip-icon.green{background:var(--green-light);color:var(--green);}
+.tip-icon.purple{background:#ede9fe;color:#7c3aed;}
+.tip-icon.navy{background:#e0e7ff;color:#3730a3;}
+.tip-title{font-size:0.88rem;font-weight:700;color:var(--navy);margin-bottom:3px;}
+.tip-desc{font-size:0.8rem;color:var(--muted);line-height:1.55;font-weight:300;}
+
+/* TOAST NOTIFICATION */
+.toast{
+  position:fixed;bottom:2rem;right:2rem;z-index:2000;
+  background:var(--navy);color:white;
+  padding:0.85rem 1.25rem;border-radius:10px;
+  font-size:0.88rem;font-weight:500;
+  display:flex;align-items:center;gap:10px;
+  box-shadow:0 8px 30px rgba(15,37,69,0.25);
+  transform:translateY(120%);opacity:0;
+  transition:transform 0.3s cubic-bezier(0.34,1.56,0.64,1),opacity 0.3s;
+  max-width:340px;
+}
+.toast.show{transform:translateY(0);opacity:1;}
+.toast.success{background:var(--green);}
+.toast.error{background:var(--red);}
+.toast.warning{background:var(--amber);}
+.toast-icon{font-size:1rem;flex-shrink:0;}
+
+/* PASSWORD MODAL */
+.pw-modal-backdrop{position:fixed;inset:0;background:rgba(15,37,69,0.45);backdrop-filter:blur(4px);display:none;justify-content:center;align-items:center;z-index:1100;}
+.pw-modal{background:white;border-radius:14px;padding:2rem;width:400px;max-width:92%;box-shadow:0 20px 60px rgba(15,37,69,0.2);border:1px solid var(--border);animation:popIn 0.28s cubic-bezier(0.34,1.56,0.64,1);}
+@keyframes popIn{from{transform:scale(0.88);opacity:0;}to{transform:scale(1);opacity:1;}}
+.pw-modal-icon{width:48px;height:48px;border-radius:10px;display:flex;align-items:center;justify-content:center;margin-bottom:1rem;font-size:1.1rem;}
+.pw-modal-icon.secure{background:var(--blue-light);color:var(--blue);}
+.pw-modal-icon.open-net{background:var(--green-light);color:var(--green);}
+.pw-modal h3{font-family:'DM Serif Display',serif;color:var(--navy);font-size:1.2rem;margin-bottom:0.4rem;}
+.pw-modal p{font-size:0.85rem;color:var(--muted);margin-bottom:1.25rem;line-height:1.55;}
+.pw-field-label{font-size:0.78rem;font-weight:600;color:var(--text2);text-transform:uppercase;letter-spacing:0.07em;margin-bottom:5px;}
+.pw-field{width:100%;padding:0.65rem 0.9rem;border:1.5px solid var(--border2);border-radius:8px;font-size:0.92rem;font-family:'DM Sans',sans-serif;color:var(--text);outline:none;transition:border-color 0.2s;margin-bottom:1.1rem;}
+.pw-input-wrapper{
+    position:relative;
+}
+
+.pw-input-wrapper .pw-field{
+    padding-right:45px;
+    margin-bottom:0;
+}
+
+.toggle-password{
+    position:absolute;
+    right:12px;
+    top:50%;
+    transform:translateY(-50%);
+    background:none;
+    border:none;
+    cursor:pointer;
+    color:#64748b;
+    font-size:16px;
+}
+
+.toggle-password:hover{
+    color:#2563eb;
+}
+.pw-field:focus{border-color:var(--blue);}
+.pw-warn{background:var(--amber-light);border:1px solid #fde68a;border-radius:8px;padding:0.7rem 0.9rem;font-size:0.8rem;color:#92400e;display:flex;gap:8px;align-items:flex-start;margin-bottom:1.1rem;line-height:1.5;}
+.pw-actions{display:flex;gap:0.75rem;}
+.pw-btn-cancel{flex:1;padding:0.65rem;border:1.5px solid var(--border2);border-radius:8px;background:white;color:var(--muted);font-size:0.9rem;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all 0.2s;}
+.pw-btn-cancel:hover{border-color:var(--border2);background:#f8fafc;}
+.pw-btn-connect{flex:2;padding:0.65rem;border:none;border-radius:8px;background:var(--navy);color:white;font-size:0.9rem;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all 0.2s;display:flex;align-items:center;justify-content:center;gap:7px;}
+.pw-btn-connect:hover{background:var(--navy2);}
+.pw-btn-connect:disabled{opacity:0.55;cursor:not-allowed;}
+.pw-btn-connect.danger-connect{background:var(--red);}
+.pw-btn-connect.danger-connect:hover{background:#b91c1c;}
+
+/* MAIN MODAL (threat) */
+.modal-backdrop{position:fixed;inset:0;background:rgba(15,37,69,0.4);backdrop-filter:blur(4px);display:none;justify-content:center;align-items:center;z-index:1000;}
+.modal{background:white;border-radius:14px;padding:2.5rem;width:460px;max-width:92%;text-align:center;box-shadow:0 20px 60px rgba(15,37,69,0.2);border:1px solid var(--border);animation:popIn 0.3s cubic-bezier(0.34,1.56,0.64,1);}
+.modal-icon-wrap{width:56px;height:56px;border-radius:12px;background:var(--red-light);display:flex;align-items:center;justify-content:center;margin:0 auto 1.25rem;font-size:1.4rem;color:var(--red);}
+.modal h2{font-family:'DM Serif Display',serif;color:var(--navy);font-size:1.4rem;margin-bottom:0.75rem;}
+.modal-reason{font-size:0.85rem;color:var(--text2);line-height:1.65;margin-bottom:1rem;background:var(--red-light);border-radius:8px;padding:0.85rem 1rem;text-align:left;border-left:3px solid var(--red);}
+.modal p{font-size:0.88rem;color:var(--muted);line-height:1.65;margin-bottom:1.75rem;font-weight:300;}
+.modal button{background:var(--red);color:white;border:none;padding:0.7rem 1.75rem;border-radius:7px;cursor:pointer;font-family:'DM Sans',sans-serif;font-size:0.9rem;font-weight:600;transition:all 0.2s;}
+.modal button:hover{background:#b91c1c;}
+</style>
+</head>
+<body>
+
+<nav>
+  <a href="{{ url_for('landing') }}" class="logo">
+    <div class="logo-mark"><i class="fa-solid fa-shield-halved"></i></div>
+    <span class="logo-text">Twin<span>Guard</span></span>
+  </a>
+  <div class="nav-right">
+    <a href="{{ url_for('landing') }}" class="nav-back"><i class="fa-solid fa-arrow-left"></i> Home</a>
+  </div>
+</nav>
+
+<div class="page">
+
+  <div class="page-header">
+    <h1 class="page-title">Network Scanner</h1>
+    <p class="page-sub">Scan, analyse, and connect to WiFi networks — all from one place.</p>
+  </div>
+
+  <!-- CONNECTED BANNER -->
+  <div class="connected-banner is-disconnected" id="connectedBanner">
+    <div class="cb-icon disconnected" id="cbIcon"><i class="fa-solid fa-wifi-slash"></i></div>
+    <div class="cb-body">
+      <div class="cb-label">Currently Connected Network</div>
+      <div class="cb-ssid unknown" id="cbSsid">Run a scan to detect your connected network</div>
+      <div class="cb-meta" id="cbMeta">Connection status unknown</div>
+    </div>
+    <div class="cb-right">
+      <span class="cb-pill disconnected" id="cbPill">Unknown</span>
+      <button class="disconnect-btn hidden" id="disconnectBannerBtn" onclick="doDisconnect()">
+        <i class="fa-solid fa-plug-circle-xmark"></i> Disconnect
+      </button>
+    </div>
+  </div>
+
+  <!-- CONTROLS BAR -->
+  <div class="controls-bar">
+    <button id="scanBtn" class="btn"><i class="fa-solid fa-radar"></i> Scan Now</button>
+    <button id="exportBtn" class="btn-outline-sm" onclick="exportCSV()" disabled title="Run a scan first">
+      <i class="fa-solid fa-download"></i> Export CSV
+    </button>
+    <div class="refresh-control">
+      <span class="refresh-toggle-label">Auto-scan</span>
+      <label class="toggle-switch">
+        <input type="checkbox" id="autoRefreshToggle" onchange="handleAutoRefreshToggle()">
+        <span class="toggle-slider"></span>
+      </label>
+      <div class="refresh-sep"></div>
+      <select id="intervalSelect" class="interval-select" onchange="handleIntervalChange()" disabled>
+        <option value="30">30s</option>
+        <option value="60" selected>1 min</option>
+        <option value="300">5 min</option>
+      </select>
+      <span class="refresh-countdown hidden" id="refreshCountdown">—</span>
+    </div>
+    <div class="last-update">
+      <span class="status-dot" id="statusDot"></span>
+      <span id="lastScan">Never scanned</span>
+    </div>
+  </div>
+
+  <!-- STAT CARDS -->
+  <div class="stat-row">
+    <div class="stat-card">
+      <div class="stat-icon si-total"><i class="fa-solid fa-wifi"></i></div>
+      <div><div class="stat-card-num" id="totalCount">—</div><div class="stat-card-label">Networks Found</div></div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon si-safe"><i class="fa-solid fa-check"></i></div>
+      <div><div class="stat-card-num" id="safeCount">—</div><div class="stat-card-label">Safe Networks</div></div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon si-threat"><i class="fa-solid fa-triangle-exclamation"></i></div>
+      <div><div class="stat-card-num" id="threatCount">—</div><div class="stat-card-label">Threats Detected</div></div>
+    </div>
+  </div>
+
+  <!-- LOADING -->
+  <div id="loading" class="loading hidden">
+    <i class="fa-solid fa-spinner fa-spin"></i>
+    <p>Scanning nearby Wi-Fi networks…</p>
+    <div class="load-bar"><div class="load-bar-inner"></div></div>
+  </div>
+
+  <!-- RESULTS TABLE -->
+  <div id="results" class="table-wrap hidden">
+    <div class="table-head-bar">
+      <h3>Scan Results</h3>
+      <span class="scan-time-label" id="scanTime"></span>
+    </div>
+    <table>
+      <thead>
+        <tr>
+          <th>Status</th><th>SSID</th><th>MAC / BSSID</th>
+          <th>Signal</th><th>Security</th><th>Channel</th>
+          <th>Threat Reason</th><th>Action</th>
+        </tr>
+      </thead>
+      <tbody id="networkBody"></tbody>
+    </table>
+  </div>
+
+  <!-- EMPTY -->
+  <div id="no-results" class="empty-state hidden">
+    <i class="fa-solid fa-magnifying-glass"></i>
+    <p>No Wi-Fi networks found or scan failed.<br>Ensure the Flask backend is running on port 5000.</p>
+  </div>
+
+  <!-- SCAN HISTORY -->
+  <div class="history-section">
+    <div class="history-header" onclick="toggleHistory()">
+      <div class="history-header-left">
+        <div class="history-header-icon"><i class="fa-solid fa-clock-rotate-left"></i></div>
+        <div>
+          <h3>Scan History</h3>
+          <div class="history-header-sub" id="historySubLabel">No scans this session</div>
+        </div>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px;">
+        <button class="history-clear-btn" id="historyClearBtn" onclick="clearHistory(event)" style="display:none">
+          <i class="fa-solid fa-trash-can"></i> Clear
+        </button>
+        <div class="history-chevron" id="historyChevron"><i class="fa-solid fa-chevron-down"></i></div>
+      </div>
+    </div>
+    <div id="historyBody" class="history-body hidden">
+      <div class="history-empty" id="historyEmpty"><i class="fa-solid fa-clock-rotate-left"></i>Run your first scan to start tracking history.</div>
+      <div class="history-timeline" id="historyTimeline"></div>
+    </div>
+  </div>
+
+  <!-- SAFETY SECTION -->
+  <div class="safety-section">
+    <div class="safety-header" onclick="toggleSafety()">
+      <div class="safety-header-left">
+        <div class="safety-header-icon"><i class="fa-solid fa-shield-halved"></i></div>
+        <div><h3>Public WiFi Safety Guidelines</h3><p>Essential practices to protect yourself on unfamiliar networks</p></div>
+      </div>
+      <div class="safety-toggle open" id="safetyToggle"><i class="fa-solid fa-chevron-up"></i></div>
+    </div>
+    <div class="safety-body" id="safetyBody">
+      <div class="safety-tip"><div class="tip-icon red"><i class="fa-solid fa-ban"></i></div><div><div class="tip-title">Avoid Open / Unsecured Networks</div><div class="tip-desc">Never connect to networks with no password. All traffic is visible in plaintext to anyone on the same network.</div></div></div>
+      <div class="safety-tip"><div class="tip-icon amber"><i class="fa-solid fa-magnifying-glass"></i></div><div><div class="tip-title">Verify Network Authenticity</div><div class="tip-desc">Before connecting, ask staff for the exact SSID. If TwinGuard flags a network you're about to join, walk away.</div></div></div>
+      <div class="safety-tip"><div class="tip-icon blue"><i class="fa-solid fa-lock"></i></div><div><div class="tip-title">Use HTTPS Sites Only</div><div class="tip-desc">Always verify the padlock in your browser. Avoid banking or email on public WiFi — sessions can be intercepted.</div></div></div>
+      <div class="safety-tip"><div class="tip-icon green"><i class="fa-solid fa-globe"></i></div><div><div class="tip-title">Use a VPN on Public Networks</div><div class="tip-desc">A VPN encrypts all traffic, neutralising most man-in-the-middle attacks even on rogue access points.</div></div></div>
+      <div class="safety-tip"><div class="tip-icon purple"><i class="fa-solid fa-share-nodes"></i></div><div><div class="tip-title">Disable File & Printer Sharing</div><div class="tip-desc">Turn off network discovery in OS settings on public networks to block access to your shared resources.</div></div></div>
+      <div class="safety-tip"><div class="tip-icon navy"><i class="fa-solid fa-rotate"></i></div><div><div class="tip-title">Forget Networks After Use</div><div class="tip-desc">Remove public WiFi profiles after use so your device doesn't silently reconnect to a spoofed twin later.</div></div></div>
+    </div>
+  </div>
+
+</div>
+
+<!-- THREAT MODAL -->
+<div id="modalBackdrop" class="modal-backdrop">
+  <div class="modal">
+    <div class="modal-icon-wrap"><i class="fa-solid fa-triangle-exclamation"></i></div>
+    <h2>Suspicious Network Detected</h2>
+    <div class="modal-reason" id="modalReason"></div>
+    <p id="modalMessage"></p>
+    <button onclick="closeModal()">Dismiss Warning</button>
+  </div>
+</div>
+
+<!-- PASSWORD / CONNECT MODAL -->
+<div id="pwModalBackdrop" class="pw-modal-backdrop">
+  <div class="pw-modal">
+    <div class="pw-modal-icon" id="pwModalIcon"><i class="fa-solid fa-wifi"></i></div>
+    <h3 id="pwModalTitle">Connect to Network</h3>
+    <p id="pwModalDesc">Enter the password to connect.</p>
+    <div id="pwFieldWrap">
+    <div class="pw-field-label">Password</div>
+
+    <div class="pw-input-wrapper">
+        <input
+            type="password"
+            id="pwInput"
+            class="pw-field"
+            placeholder="WiFi password"
+            autocomplete="off">
+
+        <button
+            type="button"
+            class="toggle-password"
+            onclick="togglePassword()">
+
+            <i id="eyeIcon" class="fa-solid fa-eye"></i>
+        </button>
+    </div>
+</div>
+    <div class="pw-actions">
+      <button class="pw-btn-cancel" onclick="closePwModal()">Cancel</button>
+      <button class="pw-btn-connect" id="pwConnectBtn" onclick="submitConnect()">
+        <i class="fa-solid fa-plug-circle-check"></i> Connect
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast">
+  <span class="toast-icon" id="toastIcon"></span>
+  <span id="toastMsg"></span>
+</div>
+
+<script>
+/* ════════════════════════════════════════
+   REFS
+════════════════════════════════════════ */
+const scanBtn           = document.getElementById("scanBtn");
+const lastScanEl        = document.getElementById("lastScan");
+const loadingEl         = document.getElementById("loading");
+const resultsEl         = document.getElementById("results");
+const noResultsEl       = document.getElementById("no-results");
+const networkBody       = document.getElementById("networkBody");
+const modalBackdrop     = document.getElementById("modalBackdrop");
+const modalMessage      = document.getElementById("modalMessage");
+const modalReason       = document.getElementById("modalReason");
+const statusDot         = document.getElementById("statusDot");
+const connectedBanner   = document.getElementById("connectedBanner");
+const cbIcon            = document.getElementById("cbIcon");
+const cbSsid            = document.getElementById("cbSsid");
+const cbMeta            = document.getElementById("cbMeta");
+const cbPill            = document.getElementById("cbPill");
+const exportBtn         = document.getElementById("exportBtn");
+const autoToggle        = document.getElementById("autoRefreshToggle");
+const intervalSelect    = document.getElementById("intervalSelect");
+const countdownEl       = document.getElementById("refreshCountdown");
+const disconnectBannerBtn = document.getElementById("disconnectBannerBtn");
+
+/* ════════════════════════════════════════
+   STATE
+════════════════════════════════════════ */
+let lastNetworks   = [];
+let autoTimer      = null;
+let countdownTimer = null;
+let countdownSecs  = 0;
+let connectingSSID = "";   // SSID pending in password modal
+let connectingIsThreat = false;
+let currentSSID    = null; // currently connected SSID (inferred)
+
+/* ════════════════════════════════════════
+   TOAST
+════════════════════════════════════════ */
+let toastTimeout;
+function showToast(msg, type="info") {
+  const el   = document.getElementById("toast");
+  const icon = document.getElementById("toastIcon");
+  const txt  = document.getElementById("toastMsg");
+  const icons = {success:"fa-circle-check", error:"fa-circle-xmark", warning:"fa-triangle-exclamation", info:"fa-circle-info"};
+  el.className = `toast ${type}`;
+  icon.innerHTML = `<i class="fa-solid ${icons[type]||icons.info}"></i>`;
+  txt.textContent = msg;
+  el.classList.add("show");
+  clearTimeout(toastTimeout);
+  toastTimeout = setTimeout(() => el.classList.remove("show"), 4000);
+}
+
+/* ════════════════════════════════════════
+   THREAT MODAL
+════════════════════════════════════════ */
+function showModal(ssid, reason, message) {
+  modalReason.textContent  = reason  || "";
+  modalMessage.textContent = message || "";
+  modalBackdrop.style.display = "flex";
+}
+function closeModal() { modalBackdrop.style.display = "none"; }
+
+/* ════════════════════════════════════════
+   SAFETY / HISTORY TOGGLES
+════════════════════════════════════════ */
+function toggleSafety() {
+  const body = document.getElementById("safetyBody");
+  const tog  = document.getElementById("safetyToggle");
+  const open = body.style.display !== "none";
+  body.style.display = open ? "none" : "grid";
+  tog.classList.toggle("open", !open);
+}
+function toggleHistory() {
+  const body    = document.getElementById("historyBody");
+  const chevron = document.getElementById("historyChevron");
+  const open    = !body.classList.contains("hidden");
+  body.classList.toggle("hidden", open);
+  chevron.classList.toggle("open", !open);
+}
+function togglePassword(){
+
+    const input = document.getElementById("pwInput");
+    const icon  = document.getElementById("eyeIcon");
+
+    if(input.type==="password"){
+
+        input.type="text";
+        icon.classList.remove("fa-eye");
+        icon.classList.add("fa-eye-slash");
+
+    }else{
+
+        input.type="password";
+        icon.classList.remove("fa-eye-slash");
+        icon.classList.add("fa-eye");
+
+    }
+}
+
+/* ════════════════════════════════════════
+   STATUS HELPERS
+════════════════════════════════════════ */
+function getStatusClass(s) {
+  if (!s) return "";
+  if (s.includes("Safe (Dual") || s.includes("Enterprise")) return "status-info";
+  if (s.includes("Safe"))              return "status-safe";
+  if (s.includes("Security Mismatch")) return "status-amber";
+  return "status-warning";
+}
+function getRowClass(s) {
+  if (!s) return "";
+  if (s.includes("Security Mismatch")) return "row-amber";
+  if (s.includes("Evil Twin") || s.includes("Suspicious")) return "row-threat";
+  return "";
+}
+function isSafe(s) {
+  return !s || s.toLowerCase().startsWith("safe");
+}
+
+/* ════════════════════════════════════════
+   CONNECTED BANNER
+   Uses the real connected_ssid from the backend
+   (netsh wlan show interfaces), not a signal guess.
+════════════════════════════════════════ */
+function updateConnectedBanner(networks, connectedSsid) {
+  if (!connectedSsid) { setDisconnected(); return; }
+
+  currentSSID = connectedSsid;
+
+  // Find the matching network entry for metadata
+  const match = networks.find(n => n.SSID === connectedSsid);
+  const atRisk = match && match.Status &&
+    (match.Status.includes("Evil Twin") || match.Status.includes("Security Mismatch"));
+
+  connectedBanner.className = "connected-banner " + (atRisk ? "is-at-risk" : "is-connected");
+  cbIcon.className  = "cb-icon " + (atRisk ? "at-risk" : "connected");
+  cbIcon.innerHTML  = '<i class="fa-solid fa-wifi"></i>';
+  cbSsid.className  = "cb-ssid";
+  cbSsid.textContent = connectedSsid;
+  if (match) {
+    cbMeta.textContent = `Signal: ${match.Signal||"—"}  ·  Security: ${match.Security||"—"}  ·  Channel: ${match.Channel||"—"}`;
+  } else {
+    cbMeta.textContent = "Details not available in current scan";
+  }
+  cbPill.className   = "cb-pill " + (atRisk ? "at-risk" : "connected");
+  cbPill.style.background = "";
+  cbPill.style.color = "";
+  cbPill.textContent = atRisk ? "⚠ At Risk" : "Connected";
+  disconnectBannerBtn.classList.remove("hidden");
+}
+function setDisconnected() {
+  currentSSID = null;
+  connectedBanner.className = "connected-banner is-disconnected";
+  cbIcon.className  = "cb-icon disconnected";
+  cbIcon.innerHTML  = '<i class="fa-solid fa-wifi-slash"></i>';
+  cbSsid.className  = "cb-ssid unknown";
+  cbSsid.textContent = "Run a scan to detect your connected network";
+  cbMeta.textContent = "Connection status unknown";
+  cbPill.className   = "cb-pill disconnected";
+  cbPill.style.background = "";
+  cbPill.style.color = "";
+  cbPill.textContent = "Unknown";
+  disconnectBannerBtn.classList.add("hidden");
+}
+
+/* ════════════════════════════════════════
+   REASON DRAWER
+════════════════════════════════════════ */
+const THREAT_TIPS = {
+  evil_twin: [
+    {icon:"fa-user-secret",  text:"Do not connect — a real network would not have a MAC vendor mismatch."},
+    {icon:"fa-shield-halved",text:"Report the network to the venue's IT team or staff."},
+    {icon:"fa-wifi",         text:"Connect only to the verified network confirmed by venue staff."},
+  ],
+  security_mismatch: [
+    {icon:"fa-lock-open",    text:"The open/weak variant is the attacker's bait — avoid it entirely."},
+    {icon:"fa-shield-halved",text:"Always connect to the most secure version of a network."},
+    {icon:"fa-globe",        text:"Use a VPN if you must connect, to encrypt your traffic regardless."},
+  ],
+};
+
+function openDrawer(ssid, status, reason) {
+  const isEvil    = status.includes("Evil Twin");
+  const isMismatch= status.includes("Security Mismatch");
+  const colour    = isEvil ? "red" : "amber";
+  const tipKey    = isEvil ? "evil_twin" : "security_mismatch";
+
+  document.getElementById("drawerSsid").textContent = ssid;
+
+  const icon = document.getElementById("drawerIcon");
+  icon.className = `drawer-threat-icon ${colour}`;
+  icon.innerHTML = isEvil
+    ? '<i class="fa-solid fa-user-secret"></i>'
+    : '<i class="fa-solid fa-triangle-exclamation"></i>';
+
+  // Status badge
+  const badgeCls = isEvil ? "status-warning" : "status-amber";
+  const shortLabel = isEvil ? "Evil Twin" : "Security Mismatch";
+  document.getElementById("drawerBadge").innerHTML =
+    `<span class="${badgeCls}" style="font-size:0.7rem;">${shortLabel}</span>`;
+
+  // Reason text
+  const rt = document.getElementById("drawerReason");
+  rt.textContent = reason;
+  rt.className   = `drawer-reason-text ${colour}-border`;
+
+  // Tips
+  const tips = THREAT_TIPS[tipKey] || [];
+  document.getElementById("drawerTips").innerHTML = tips.length
+    ? `<div class="drawer-section-label" style="margin-top:1rem;">What to do</div>` +
+      tips.map(t=>`<div class="drawer-tip-row"><i class="fa-solid ${t.icon} drawer-tip-icon"></i><span>${t.text}</span></div>`).join("")
+    : "";
+
+  document.getElementById("drawerBackdrop").classList.add("open");
+  document.getElementById("reasonDrawer").classList.add("open");
+  document.body.style.overflow = "hidden";
+}
+
+function closeDrawer() {
+  document.getElementById("drawerBackdrop").classList.remove("open");
+  document.getElementById("reasonDrawer").classList.remove("open");
+  document.body.style.overflow = "";
+}
+
+/* ════════════════════════════════════════
+  EXPORT CSV
+════════════════════════════════════════ */
+function exportCSV() {
+  if (!lastNetworks.length) return;
+  const headers = ["Status","SSID","MAC","Signal","Security","Channel","Reason"];
+  const rows = lastNetworks.map(n => [
+    n.Status||"", n.SSID||"", n.MAC||"", n.Signal||"",
+    n.Security||"", n.Channel||"",
+    (n.Reason||"").replace(/,/g,"；").replace(/\n/g," ")
+  ]);
+  const csv = [headers,...rows]
+    .map(r => r.map(c=>`"${String(c).replace(/"/g,'""')}"`).join(","))
+    .join("\r\n");
+  const blob = new Blob([csv],{type:"text/csv;charset=utf-8;"});
+  const url  = URL.createObjectURL(blob);
+  const a    = document.createElement("a");
+  const now  = new Date();
+  const ts   = `${now.getFullYear()}${String(now.getMonth()+1).padStart(2,'0')}${String(now.getDate()).padStart(2,'0')}_${String(now.getHours()).padStart(2,'0')}${String(now.getMinutes()).padStart(2,'0')}`;
+  a.href = url; a.download = `twinguard_scan_${ts}.csv`; a.click();
+  URL.revokeObjectURL(url);
+}
+
+/* ════════════════════════════════════════
+    AUTO-REFRESH
+════════════════════════════════════════ */
+function handleAutoRefreshToggle() {
+  autoToggle.checked ? startAutoRefresh() : stopAutoRefresh();
+}
+function handleIntervalChange() {
+  if (autoToggle.checked) { stopAutoRefresh(); startAutoRefresh(); }
+}
+function startAutoRefresh() {
+  intervalSelect.disabled = false;
+  const secs = parseInt(intervalSelect.value);
+  countdownSecs = secs;
+  countdownEl.classList.remove("hidden");
+  countdownEl.textContent = fmtCD(secs);
+  scanBtn.classList.add("auto-active");
+  scanBtn.querySelector("i").className = "fa-solid fa-rotate";
+  countdownTimer = setInterval(()=>{ countdownSecs--; if(countdownSecs<=0) countdownSecs=secs; countdownEl.textContent=fmtCD(countdownSecs); },1000);
+  autoTimer = setInterval(()=>{ countdownSecs=secs; performScan(); }, secs*1000);
+}
+function stopAutoRefresh() {
+  clearInterval(autoTimer); clearInterval(countdownTimer);
+  autoTimer=null; countdownTimer=null;
+  countdownEl.classList.add("hidden");
+  scanBtn.classList.remove("auto-active");
+  scanBtn.querySelector("i").className = "fa-solid fa-radar";
+  intervalSelect.disabled = true;
+}
+function fmtCD(s){ return s>=60?`${Math.floor(s/60)}m ${s%60}s`:`${s}s`; }
+
+/* ════════════════════════════════════════
+   ③ SCAN HISTORY
+════════════════════════════════════════ */
+const HKEY = "twinguard_history";
+function loadHistory(){ try{ return JSON.parse(sessionStorage.getItem(HKEY))||[]; }catch{ return []; } }
+function saveHistory(h){ sessionStorage.setItem(HKEY, JSON.stringify(h.slice(0,50))); }
+function addHistory(total,safe,threats,names){
+  const h=loadHistory();
+  h.unshift({ts:new Date().toISOString(),total,safe,threats,threatNames:names||[]});
+  saveHistory(h); renderHistory();
+}
+function clearHistory(e){ if(e)e.stopPropagation(); sessionStorage.removeItem(HKEY); renderHistory(); }
+function renderHistory(){
+  const h=loadHistory();
+  const tl=document.getElementById("historyTimeline");
+  const em=document.getElementById("historyEmpty");
+  const sub=document.getElementById("historySubLabel");
+  const cb=document.getElementById("historyClearBtn");
+  if(!h.length){sub.textContent="No scans this session";cb.style.display="none";tl.innerHTML="";em.style.display="block";return;}
+  sub.textContent=`${h.length} scan${h.length>1?"s":""} this session`;
+  cb.style.display="flex"; em.style.display="none";
+  tl.innerHTML=h.map(e=>{
+    const d=new Date(e.ts);
+    const time=d.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit',second:'2-digit'});
+    const date=d.toLocaleDateString([],{month:'short',day:'numeric'});
+    const dot=e.threats>0?"threat":"safe";
+    const detail=e.threatNames.length
+      ?`<div class="ht-threats">⚠ ${e.threatNames.map(n=>`<span>${n}</span>`).join(", ")}</div>`
+      :`<div class="ht-clean">No threats detected</div>`;
+    return `<div class="history-item"><div class="ht-spine"><div class="ht-dot ${dot}"></div><div class="ht-line"></div></div><div class="ht-content"><div class="ht-row"><span class="ht-time">${date} · ${time}</span><div class="ht-badges"><span class="ht-badge total">${e.total} found</span><span class="ht-badge safe">${e.safe} safe</span>${e.threats>0?`<span class="ht-badge threat">${e.threats} threat${e.threats>1?"s":""}</span>`:""}</div></div>${detail}</div></div>`;
+  }).join("");
+}
+
+/* ════════════════════════════════════════
+   ④ CONNECT / DISCONNECT
+════════════════════════════════════════ */
+function openConnectModal(ssid, security, isThreat) {
+  connectingSSID     = ssid;
+  connectingIsThreat = isThreat;
+
+  const isOpen = !security || security.toLowerCase().includes("open") || security === "None";
+
+  document.getElementById("pwModalTitle").textContent = `Connect to "${ssid}"`;
+  const iconEl  = document.getElementById("pwModalIcon");
+  const descEl  = document.getElementById("pwModalDesc");
+  const fieldWrap = document.getElementById("pwFieldWrap");
+  const connectBtn = document.getElementById("pwConnectBtn");
+  const pwInput    = document.getElementById("pwInput");
+
+  pwInput.value = "";
+
+  if (isThreat) {
+    iconEl.className  = "pw-modal-icon";
+    iconEl.style.background = "var(--red-light)";
+    iconEl.style.color = "var(--red)";
+    connectBtn.className = "pw-btn-connect danger-connect";
+    connectBtn.innerHTML = '<i class="fa-solid fa-triangle-exclamation"></i> Connect Anyway';
+  } else {
+    iconEl.className  = "pw-modal-icon " + (isOpen ? "open-net" : "secure");
+    iconEl.style.background = "";
+    iconEl.style.color = "";
+    connectBtn.className = "pw-btn-connect";
+    connectBtn.innerHTML = '<i class="fa-solid fa-plug-circle-check"></i> Connect';
+  }
+
+  if (isOpen) {
+    descEl.textContent = "This is an open network — no password required.";
+    fieldWrap.style.display = "none";
+  } else {
+    descEl.textContent = `Security: ${security}`;
+    fieldWrap.style.display = "block";
+    setTimeout(()=>pwInput.focus(), 80);
+  }
+
+  document.getElementById("pwModalBackdrop").style.display = "flex";
+}
+function closePwModal() {
+  document.getElementById("pwModalBackdrop").style.display = "none";
+}
+
+async function submitConnect() {
+  const pwInput    = document.getElementById("pwInput");
+  const connectBtn = document.getElementById("pwConnectBtn");
+  const fieldWrap  = document.getElementById("pwFieldWrap");
+  const isOpen     = fieldWrap.style.display === "none";
+  const password   = isOpen ? "" : pwInput.value.trim();
+
+  if (!isOpen && !password) {
+    pwInput.style.borderColor = "var(--red)";
+    setTimeout(()=> pwInput.style.borderColor = "", 1500);
+    return;
+  }
+
+  connectBtn.disabled = true;
+  connectBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Connecting…';
+
+  try {
+    const res  = await fetch("/connect", {
+      method:"POST",
+      headers:{"Content-Type":"application/json"},
+      body: JSON.stringify({ssid: connectingSSID, password, is_open: isOpen})
+    });
+    const data = await res.json();
+    closePwModal();
+    if (data.success) {
+      showToast(data.message, "success");
+      setTimeout(performScan, 2500); // re-scan after 2.5s to refresh banner
+    } else {
+      showToast(data.message || "Connection failed.", "error");
+    }
+  } catch(e) {
+    closePwModal();
+    showToast("Could not reach backend.", "error");
+  }
+  connectBtn.disabled = false;
+}
+
+// Enter key in password field
+document.getElementById("pwInput").addEventListener("keydown", e => {
+  if (e.key === "Enter") submitConnect();
+});
+
+async function doDisconnect() {
+  disconnectBannerBtn.disabled = true;
+  try {
+    const res  = await fetch("/disconnect", {method:"POST"});
+    const data = await res.json();
+    if (data.success) {
+      showToast("Disconnected from WiFi.", "success");
+      setDisconnected();
+    } else {
+      showToast(data.message || "Disconnect failed.", "error");
+    }
+  } catch(e) {
+    showToast("Could not reach backend.", "error");
+  }
+  disconnectBannerBtn.disabled = false;
+}
+
+/* ════════════════════════════════════════
+   PERFORM SCAN
+════════════════════════════════════════ */
+async function performScan() {
+  scanBtn.disabled = true;
+  statusDot.classList.add("active");
+  loadingEl.classList.remove("hidden");
+  resultsEl.classList.add("hidden");
+  noResultsEl.classList.add("hidden");
+
+  try {
+    const res = await fetch("/scan");
+    if (!res.ok) throw new Error("Backend error");
+    const payload      = await res.json();
+    const networks     = payload.networks;
+    const connectedSsid = payload.connected_ssid; // real OS-level connected SSID
+    lastNetworks = networks;
+    networkBody.innerHTML = "";
+
+    const total   = networks.length;
+    const threats = networks.filter(n => n.Status &&
+      (n.Status.includes("Evil Twin") || n.Status.includes("Security Mismatch"))).length;
+    const safe    = total - threats;
+    const threatNames = [...new Set(networks
+      .filter(n => n.Status && (n.Status.includes("Evil Twin") || n.Status.includes("Security Mismatch")))
+      .map(n => n.SSID||"Unknown"))];
+
+    document.getElementById("totalCount").textContent  = total  || "0";
+    document.getElementById("safeCount").textContent   = safe   || "0";
+    document.getElementById("threatCount").textContent = threats || "0";
+
+    updateConnectedBanner(networks, connectedSsid);
+    addHistory(total, safe, threats, threatNames);
+    exportBtn.disabled = total === 0;
+
+    if (total === 0) {
+      noResultsEl.classList.remove("hidden");
+    } else {
+      let alertTriggered = false;
+      networks.forEach(net => {
+        const row         = document.createElement("tr");
+        const statusClass = getStatusClass(net.Status);
+        const rowClass    = getRowClass(net.Status);
+        if (rowClass) row.classList.add(rowClass);
+
+        const safeNet     = isSafe(net.Status);
+        const isThreat    = !safeNet;
+        const isCurrentlyConnected = net.Connected === true;
+
+        // Reason cell — compact chip for threats, dash for safe
+        const chipColour  = (net.Status||"").includes("Evil Twin") ? "chip-red" : "chip-amber";
+        const chipLabel   = (net.Status||"").includes("Evil Twin") ? "Evil Twin" : "Mismatch";
+        const escapedSsid   = (net.SSID||"").replace(/\\/g,"\\\\").replace(/'/g,"\\'").replace(/"/g,"&quot;");
+        const escapedStatus = (net.Status||"").replace(/\\/g,"\\\\").replace(/'/g,"\\'");
+        const escapedReason = (net.Reason||"").replace(/\\/g,"\\\\").replace(/'/g,"\\'");
+
+        const reasonCell = safeNet
+          ? `<td style="color:var(--muted);font-size:0.78rem;text-align:center;">—</td>`
+          : `<td>
+               <span class="reason-chip ${chipColour}"
+                 onclick="openDrawer('${escapedSsid}','${escapedStatus}','${escapedReason}')">
+                 <i class="fa-solid fa-circle-info" style="font-size:0.68rem;"></i>${chipLabel}
+               </span>
+             </td>`;
+
+        const actionCell = isCurrentlyConnected
+          ? `<td class="connect-cell"><button class="tbl-connect-btn connected-now" disabled><i class="fa-solid fa-check"></i> Connected</button></td>`
+          : `<td class="connect-cell"><button class="tbl-connect-btn ${isThreat?"danger":""}"
+               onclick="openConnectModal('${(net.SSID||"").replace(/'/g,"\\'")}','${(net.Security||"").replace(/'/g,"\\'")}',${isThreat})">
+               <i class="fa-solid fa-plug-circle-check"></i> Connect
+             </button></td>`;
+
+        row.innerHTML = `
+          <td><span class="${statusClass}">${net.Status||"?"}</span></td>
+          <td><strong>${net.SSID||"—"}</strong></td>
+          <td><span class="mac">${net.MAC||"—"}</span></td>
+          <td>${net.Signal||"—"}</td>
+          <td>${net.Security||"—"}</td>
+          <td><span class="channel">${net.Channel||"—"}</span></td>
+          ${reasonCell}
+          ${actionCell}`;
+
+        networkBody.appendChild(row);
+
+        if (net.Status && net.Status.includes("Possible Evil Twin") && !alertTriggered) {
+          showModal(net.SSID, net.Reason||"",
+            `"${net.SSID}" appears to be a Possible Evil Twin. Connecting may expose your traffic to interception. Do not connect.`);
+          alertTriggered = true;
+        }
+      });
+
+      resultsEl.classList.remove("hidden");
+      const now = new Date();
+      document.getElementById("scanTime").textContent =
+        `Last updated ${now.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})}`;
+    }
+
+    const now = new Date();
+    lastScanEl.textContent = `Scanned at ${now.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})}`;
+
+  } catch(err) {
+    console.error(err);
+    noResultsEl.classList.remove("hidden");
+    document.getElementById("totalCount").textContent = "!";
+    setDisconnected();
+  }
+
+  loadingEl.classList.add("hidden");
+  statusDot.classList.remove("active");
+  scanBtn.disabled = false;
+}
+
+/* INIT */
+scanBtn.addEventListener("click", performScan);
+renderHistory();
+</script>
+<!-- REASON DRAWER -->
+<div class="reason-drawer-backdrop" id="drawerBackdrop" onclick="closeDrawer()"></div>
+<div class="reason-drawer" id="reasonDrawer">
+  <div class="drawer-handle"></div>
+  <div class="drawer-header">
+    <div class="drawer-header-left">
+      <div class="drawer-threat-icon" id="drawerIcon"><i class="fa-solid fa-triangle-exclamation"></i></div>
+      <div>
+        <div class="drawer-ssid" id="drawerSsid">Network Name</div>
+        <span id="drawerBadge"></span>
+      </div>
+    </div>
+    <button class="drawer-close" onclick="closeDrawer()"><i class="fa-solid fa-xmark"></i></button>
+  </div>
+  <div class="drawer-body">
+    <div class="drawer-section-label">Why this network is flagged</div>
+    <div class="drawer-reason-text" id="drawerReason"></div>
+    <div class="drawer-tips" id="drawerTips"></div>
+  </div>
+</div>
+
+</body>
+</html>

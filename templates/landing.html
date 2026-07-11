@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>TwinGuard • WiFi Threat Detection</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+:root{
+  --bg:#f5f3ef;
+  --white:#ffffff;
+  --navy:#0f2545;
+  --navy2:#1a3a6e;
+  --blue:#2563eb;
+  --blue-light:#dbeafe;
+  --red:#dc2626;
+  --red-light:#fee2e2;
+  --green:#16a34a;
+  --green-light:#dcfce7;
+  --amber:#d97706;
+  --amber-light:#fef3c7;
+  --text:#0f172a;
+  --text2:#334155;
+  --muted:#64748b;
+  --border:#e2e8f0;
+  --border2:#cbd5e1;
+}
+html{scroll-behavior:smooth;}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);overflow-x:hidden;}
+
+nav{position:sticky;top:0;z-index:100;background:rgba(245,243,239,0.95);backdrop-filter:blur(12px);border-bottom:1px solid var(--border);padding:0 6%;height:68px;display:flex;align-items:center;justify-content:space-between;}
+.logo{display:flex;align-items:center;gap:10px;text-decoration:none;}
+.logo-mark{width:36px;height:36px;background:var(--navy);border-radius:8px;display:flex;align-items:center;justify-content:center;color:white;font-size:1rem;}
+.logo-text{font-family:'DM Serif Display',serif;font-size:1.3rem;color:var(--navy);letter-spacing:-0.01em;}
+.logo-text span{color:var(--blue);}
+.nav-links{display:flex;align-items:center;gap:2rem;}
+.nav-links a{color:var(--muted);text-decoration:none;font-size:0.9rem;font-weight:500;transition:color 0.2s;}
+.nav-links a:hover{color:var(--text);}
+.btn-nav{padding:0.55rem 1.4rem;background:var(--navy);color:white;border-radius:6px;font-size:0.9rem;font-weight:600;text-decoration:none;transition:all 0.2s;display:inline-flex;align-items:center;gap:7px;}
+.btn-nav:hover{background:var(--navy2);transform:translateY(-1px);}
+
+.hero{padding:7rem 6% 5rem;display:grid;grid-template-columns:1fr 1fr;gap:4rem;align-items:center;max-width:1200px;margin:0 auto;}
+.hero-eyebrow{display:inline-flex;align-items:center;gap:8px;background:var(--blue-light);color:var(--blue);padding:0.35rem 0.9rem;border-radius:100px;font-size:0.8rem;font-weight:600;letter-spacing:0.04em;text-transform:uppercase;margin-bottom:1.5rem;}
+h1{font-family:'DM Serif Display',serif;font-size:clamp(2.6rem,4.5vw,3.8rem);line-height:1.1;color:var(--navy);margin-bottom:1.25rem;letter-spacing:-0.02em;}
+h1 em{font-style:italic;color:var(--blue);}
+.hero-desc{font-size:1.05rem;line-height:1.75;color:var(--text2);max-width:480px;margin-bottom:2.5rem;font-weight:300;}
+.hero-btns{display:flex;gap:1rem;flex-wrap:wrap;}
+.btn-primary{display:inline-flex;align-items:center;gap:8px;padding:0.85rem 2rem;background:var(--navy);color:white;border-radius:7px;font-size:0.95rem;font-weight:600;text-decoration:none;transition:all 0.2s;box-shadow:0 4px 14px rgba(15,37,69,0.25);}
+.btn-primary:hover{background:var(--navy2);transform:translateY(-2px);box-shadow:0 8px 20px rgba(15,37,69,0.3);}
+.btn-outline{display:inline-flex;align-items:center;gap:8px;padding:0.85rem 2rem;background:transparent;color:var(--navy);border:1.5px solid var(--border2);border-radius:7px;font-size:0.95rem;font-weight:500;text-decoration:none;transition:all 0.2s;}
+.btn-outline:hover{border-color:var(--navy);background:white;}
+
+.hero-visual{position:relative;}
+.scan-card{background:white;border-radius:16px;box-shadow:0 20px 60px rgba(15,37,69,0.12),0 4px 16px rgba(0,0,0,0.05);overflow:hidden;border:1px solid var(--border);}
+.card-header{background:var(--navy);padding:14px 18px;display:flex;align-items:center;gap:10px;}
+.card-dots{display:flex;gap:6px;}
+.card-dot{width:11px;height:11px;border-radius:50%;}
+.card-dot.r{background:#ff5f57;}.card-dot.y{background:#ffbd2e;}.card-dot.g{background:#28c840;}
+.card-title{color:rgba(255,255,255,0.5);font-size:0.78rem;font-weight:500;margin-left:6px;}
+.card-body{padding:16px;}
+.net-row{display:flex;align-items:center;justify-content:space-between;padding:10px 12px;border-radius:8px;margin-bottom:8px;border:1px solid transparent;opacity:0;animation:slideIn 0.35s ease forwards;}
+.net-row:nth-child(1){animation-delay:0.6s;background:#f8fafc;border-color:var(--border);}
+.net-row:nth-child(2){animation-delay:0.85s;background:#f8fafc;border-color:var(--border);}
+.net-row:nth-child(3){animation-delay:1.1s;background:#f8fafc;border-color:var(--border);}
+.net-row:nth-child(4){background:var(--red-light);border-color:#fca5a5;animation:slideIn 0.35s 1.4s ease forwards,warnPulse 2s 2s ease-in-out infinite;}
+@keyframes slideIn{from{opacity:0;transform:translateX(-10px);}to{opacity:1;transform:translateX(0);}}
+@keyframes warnPulse{0%,100%{box-shadow:none;}50%{box-shadow:0 0 0 3px rgba(220,38,38,0.15);}}
+.net-name{font-size:0.85rem;font-weight:600;color:var(--text);}
+.net-name.threat{color:var(--red);}
+.net-badge{font-size:0.7rem;font-weight:700;padding:3px 10px;border-radius:100px;text-transform:uppercase;letter-spacing:0.04em;}
+.badge-safe{background:var(--green-light);color:var(--green);}
+.badge-threat{background:var(--red-light);color:var(--red);}
+.progress-wrap{margin-top:12px;}
+.progress-label{font-size:0.72rem;color:var(--muted);margin-bottom:6px;display:flex;justify-content:space-between;}
+.progress-label .live{color:var(--blue);font-weight:600;}
+.progress-bar-bg{height:4px;background:var(--border);border-radius:4px;overflow:hidden;}
+.progress-bar{height:100%;width:0%;background:linear-gradient(90deg,var(--blue),#06b6d4);border-radius:4px;animation:fillBar 3s 0.5s ease-in-out forwards;}
+@keyframes fillBar{0%{width:0%;}40%{width:50%;}75%{width:78%;}100%{width:100%;}}
+
+.float-badge{position:absolute;bottom:-20px;right:-20px;background:white;border-radius:12px;padding:12px 16px;box-shadow:0 8px 30px rgba(0,0,0,0.12);border:1px solid var(--border);display:flex;align-items:center;gap:10px;animation:float 3s ease-in-out infinite;}
+@keyframes float{0%,100%{transform:translateY(0);}50%{transform:translateY(-6px);}}
+.float-icon{width:36px;height:36px;background:var(--red-light);border-radius:8px;display:flex;align-items:center;justify-content:center;color:var(--red);font-size:0.9rem;}
+.float-text{font-size:0.78rem;}
+.float-text strong{display:block;color:var(--text);font-weight:700;}
+.float-text span{color:var(--muted);}
+
+.stats{background:var(--navy);padding:3.5rem 6%;}
+.stats-inner{max-width:1200px;margin:0 auto;display:grid;grid-template-columns:repeat(4,1fr);}
+.stat-item{text-align:center;padding:0 2rem;border-right:1px solid rgba(255,255,255,0.1);}
+.stat-item:last-child{border-right:none;}
+.stat-n{font-family:'DM Serif Display',serif;font-size:2.8rem;color:white;line-height:1;margin-bottom:0.3rem;}
+.stat-n span{color:#93c5fd;}
+.stat-l{font-size:0.85rem;color:rgba(255,255,255,0.5);font-weight:300;}
+
+.features{padding:7rem 6%;max-width:1200px;margin:0 auto;}
+.sec-label{font-size:0.78rem;font-weight:600;text-transform:uppercase;letter-spacing:0.12em;color:var(--blue);margin-bottom:0.75rem;}
+.sec-title{font-family:'DM Serif Display',serif;font-size:clamp(2rem,3.5vw,2.8rem);color:var(--navy);line-height:1.15;margin-bottom:1rem;letter-spacing:-0.02em;}
+.sec-title em{font-style:italic;}
+.sec-sub{font-size:1rem;color:var(--muted);max-width:520px;line-height:1.7;font-weight:300;}
+.features-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:1.5rem;margin-top:4rem;}
+.feat{background:white;border:1px solid var(--border);border-radius:12px;padding:1.75rem;transition:all 0.25s;position:relative;overflow:hidden;}
+.feat::after{content:'';position:absolute;bottom:0;left:0;right:0;height:3px;background:linear-gradient(90deg,var(--blue),#06b6d4);transform:scaleX(0);transform-origin:left;transition:transform 0.3s;}
+.feat:hover{transform:translateY(-4px);box-shadow:0 12px 30px rgba(15,37,69,0.1);}
+.feat:hover::after{transform:scaleX(1);}
+.feat-icon{width:44px;height:44px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:1.1rem;margin-bottom:1rem;}
+.icon-blue{background:var(--blue-light);color:var(--blue);}
+.icon-red{background:var(--red-light);color:var(--red);}
+.icon-green{background:var(--green-light);color:var(--green);}
+.icon-amber{background:var(--amber-light);color:var(--amber);}
+.feat-title{font-size:0.95rem;font-weight:700;color:var(--navy);margin-bottom:0.4rem;}
+.feat-desc{font-size:0.875rem;color:var(--muted);line-height:1.6;font-weight:300;}
+
+.detection{background:white;border-top:1px solid var(--border);border-bottom:1px solid var(--border);padding:7rem 6%;}
+.detection-inner{max-width:1200px;margin:0 auto;display:grid;grid-template-columns:1fr 1fr;gap:6rem;align-items:start;}
+.detection-labels{margin-top:2.5rem;display:flex;flex-direction:column;gap:0.75rem;}
+.label-row{display:flex;align-items:center;gap:12px;padding:12px 16px;border-radius:8px;border:1px solid var(--border);background:var(--bg);font-size:0.9rem;font-weight:500;color:var(--text2);}
+.label-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0;}
+.dot-green{background:var(--green);}.dot-blue{background:var(--blue);}.dot-amber{background:var(--amber);}.dot-red{background:var(--red);}
+.label-badge{margin-left:auto;font-size:0.72rem;font-weight:700;padding:2px 10px;border-radius:100px;text-transform:uppercase;}
+.lb-safe{background:var(--green-light);color:var(--green);}
+.lb-info{background:var(--blue-light);color:var(--blue);}
+.lb-warn{background:var(--amber-light);color:var(--amber);}
+.lb-danger{background:var(--red-light);color:var(--red);}
+.rules-list{display:flex;flex-direction:column;gap:1rem;}
+.rule{display:flex;gap:1rem;align-items:flex-start;padding:1.25rem;background:var(--bg);border-radius:10px;border:1px solid var(--border);transition:border-color 0.2s;}
+.rule:hover{border-color:var(--border2);}
+.rule-num{font-family:'DM Serif Display',serif;font-size:1.5rem;color:var(--border2);line-height:1;flex-shrink:0;width:28px;}
+.rule-title{font-size:0.9rem;font-weight:700;color:var(--navy);margin-bottom:0.2rem;}
+.rule-desc{font-size:0.82rem;color:var(--muted);line-height:1.5;font-weight:300;}
+
+.how{padding:7rem 6%;max-width:1200px;margin:0 auto;}
+.steps-row{display:grid;grid-template-columns:repeat(4,1fr);gap:0;margin-top:4rem;position:relative;}
+.steps-row::before{content:'';position:absolute;top:28px;left:14%;right:14%;height:1px;background:var(--border2);z-index:0;}
+.step-item{text-align:center;padding:0 1rem;position:relative;z-index:1;}
+.step-num{width:56px;height:56px;border-radius:50%;background:white;border:2px solid var(--border2);display:flex;align-items:center;justify-content:center;font-family:'DM Serif Display',serif;font-size:1.2rem;color:var(--navy);margin:0 auto 1.25rem;transition:all 0.3s;}
+.step-item:hover .step-num{border-color:var(--blue);color:var(--blue);box-shadow:0 0 0 4px var(--blue-light);}
+.step-title{font-size:0.95rem;font-weight:700;color:var(--navy);margin-bottom:0.4rem;}
+.step-desc{font-size:0.82rem;color:var(--muted);line-height:1.6;font-weight:300;}
+
+.cta{background:var(--navy);padding:7rem 6%;text-align:center;position:relative;overflow:hidden;}
+.cta::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 50% 0%,rgba(37,99,235,0.3),transparent 60%);}
+.cta-inner{position:relative;max-width:600px;margin:0 auto;}
+.cta h2{font-family:'DM Serif Display',serif;font-size:clamp(2.2rem,4vw,3.2rem);color:white;margin-bottom:1rem;letter-spacing:-0.02em;line-height:1.1;}
+.cta h2 em{font-style:italic;color:#93c5fd;}
+.cta p{color:rgba(255,255,255,0.6);font-size:1rem;line-height:1.7;margin-bottom:2.5rem;font-weight:300;}
+.btn-cta{display:inline-flex;align-items:center;gap:10px;padding:1rem 2.5rem;background:white;color:var(--navy);border-radius:8px;font-size:1rem;font-weight:700;text-decoration:none;transition:all 0.2s;box-shadow:0 4px 20px rgba(0,0,0,0.2);}
+.btn-cta:hover{transform:translateY(-3px);box-shadow:0 10px 30px rgba(0,0,0,0.3);}
+
+footer{padding:2rem 6%;border-top:1px solid var(--border);background:var(--bg);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:1rem;}
+.footer-logo{font-family:'DM Serif Display',serif;font-size:1.1rem;color:var(--navy);text-decoration:none;}
+.footer-logo span{color:var(--blue);}
+.footer-meta{font-size:0.8rem;color:var(--muted);}
+
+.fade-up{opacity:0;animation:fadeUp 0.65s ease forwards;}
+.fade-up:nth-child(1){animation-delay:0.05s;}.fade-up:nth-child(2){animation-delay:0.2s;}.fade-up:nth-child(3){animation-delay:0.35s;}.fade-up:nth-child(4){animation-delay:0.5s;}
+@keyframes fadeUp{from{opacity:0;transform:translateY(20px);}to{opacity:1;transform:translateY(0);}}
+
+@media(max-width:960px){
+  .hero{grid-template-columns:1fr;padding:5rem 6% 3rem;}
+  .float-badge{display:none;}
+  .stats-inner{grid-template-columns:1fr 1fr;gap:2rem;}
+  .stat-item{border-right:none;padding-bottom:1.5rem;border-bottom:1px solid rgba(255,255,255,0.1);}
+  .features-grid{grid-template-columns:1fr 1fr;}
+  .detection-inner{grid-template-columns:1fr;}
+  .steps-row{grid-template-columns:1fr 1fr;gap:2rem;}
+  .steps-row::before{display:none;}
+}
+</style>
+</head>
+<body>
+
+<nav>
+  <a href="landing.html" class="logo">
+    <div class="logo-mark"><i class="fa-solid fa-shield-halved"></i></div>
+    <span class="logo-text">Twin<span>Guard</span></span>
+  </a>
+  <div class="nav-links">
+    <a href="#features">Features</a>
+    <a href="#detection">Detection</a>
+    <a href="#how">How It Works</a>
+    <a href="/scanner" class="btn-nav"><i class="fa-solid fa-radar"></i> Launch Scanner</a>
+  </div>
+</nav>
+
+<section class="hero">
+  <div>
+    <div class="hero-eyebrow fade-up"><i class="fa-solid fa-shield-halved"></i> WiFi Threat Detection System</div>
+    <h1 class="fade-up">Detect <em>Evil Twin</em> Networks Before They Attack</h1>
+    <p class="hero-desc fade-up">TwinGuard passively scans your WiFi environment, identifies rogue access points, and alerts you to evil twin attacks — entirely offline, entirely on your machine.</p>
+    <div class="hero-btns fade-up">
+      <a href="/scanner" class="btn-primary"><i class="fa-solid fa-radar"></i> Start Scanning</a>
+      <a href="#features" class="btn-outline"><i class="fa-solid fa-list"></i> View Features</a>
+    </div>
+  </div>
+  <div class="hero-visual">
+    <div class="scan-card">
+      <div class="card-header">
+        <div class="card-dots"><div class="card-dot r"></div><div class="card-dot y"></div><div class="card-dot g"></div></div>
+        <span class="card-title">twinGuard_scan.py — live analysis</span>
+      </div>
+      <div class="card-body">
+        <div class="net-row"><span class="net-name">HomeNetwork_5G</span><span class="net-badge badge-safe">✓ Safe</span></div>
+        <div class="net-row"><span class="net-name">OfficeWiFi_Corp</span><span class="net-badge badge-safe">✓ Safe (Enterprise)</span></div>
+        <div class="net-row"><span class="net-name">CafeGuest_Free</span><span class="net-badge badge-safe">✓ Safe</span></div>
+        <div class="net-row"><span class="net-name threat">OfficeWiFi_Corp</span><span class="net-badge badge-threat">⚠ Evil Twin</span></div>
+        <div class="progress-wrap">
+          <div class="progress-label"><span>4 networks detected</span><span class="live">● Scanning</span></div>
+          <div class="progress-bar-bg"><div class="progress-bar"></div></div>
+        </div>
+      </div>
+    </div>
+    <div class="float-badge">
+      <div class="float-icon"><i class="fa-solid fa-triangle-exclamation"></i></div>
+      <div class="float-text"><strong>Threat Detected</strong><span>MAC vendor mismatch</span></div>
+    </div>
+  </div>
+</section>
+
+
+<section class="features" id="features">
+  <div class="sec-label">All Capabilities</div>
+  <h2 class="sec-title">Everything TwinGuard <em>does</em></h2>
+  <p class="sec-sub">A complete passive WiFi threat detection suite built for security-conscious users who want local control.</p>
+  <div class="features-grid">
+    <div class="feat"><div class="feat-icon icon-blue"><i class="fa-solid fa-wifi"></i></div><div class="feat-title">Passive WiFi Scanning</div><div class="feat-desc">Scans nearby networks without connecting. Extracts SSID, BSSID, signal strength, channel, and auth type at Layer 2.</div></div>
+    <div class="feat"><div class="feat-icon icon-red"><i class="fa-solid fa-clone"></i></div><div class="feat-title">Evil Twin Detection</div><div class="feat-desc">Identifies duplicate SSIDs with MAC prefix mismatches, vendor OUI conflicts, and security downgrades.</div></div>
+    <div class="feat"><div class="feat-icon icon-green"><i class="fa-solid fa-building"></i></div><div class="feat-title">Enterprise Recognition</div><div class="feat-desc">Intelligently identifies dual-band routers and campus multi-AP deployments, preventing false positives.</div></div>
+    <div class="feat"><div class="feat-icon icon-amber"><i class="fa-solid fa-bell"></i></div><div class="feat-title">Real-Time Alerts</div><div class="feat-desc">Centered modal popup fires immediately when a suspicious network is detected with visual severity indication.</div></div>
+    <div class="feat"><div class="feat-icon icon-blue"><i class="fa-solid fa-table-columns"></i></div><div class="feat-title">Live Dashboard</div><div class="feat-desc">Color-coded risk levels in a responsive table. Dynamic JavaScript updates without any page reload.</div></div>
+    <div class="feat"><div class="feat-icon icon-blue"><i class="fa-solid fa-feather"></i></div><div class="feat-title">Lightweight Stack</div><div class="feat-desc">Python + HTML/CSS/JS . No heavy dependencies, minimal resource usage, zero cloud infrastructure.</div></div>
+  </div>
+</section>
+
+<section class="detection" id="detection">
+  <div class="detection-inner">
+    <div>
+      <div class="sec-label">Detection Engine</div>
+      <h2 class="sec-title">Rule-Based <em>Threat Classification</em></h2>
+      <p class="sec-sub">Four risk levels assigned to every scanned network using multi-factor analysis.</p>
+      <div class="detection-labels">
+        <div class="label-row"><span class="label-dot dot-green"></span> Safe — No threats detected<span class="label-badge lb-safe">Safe</span></div>
+        <div class="label-row"><span class="label-dot dot-blue"></span> Dual Band / Enterprise network<span class="label-badge lb-info">Enterprise</span></div>
+        <div class="label-row"><span class="label-dot dot-amber"></span> Security downgrade detected<span class="label-badge lb-warn">High Risk</span></div>
+        <div class="label-row"><span class="label-dot dot-red"></span> Duplicate SSID + MAC mismatch<span class="label-badge lb-danger">Evil Twin</span></div>
+      </div>
+    </div>
+    <div class="rules-list">
+      <div class="rule"><div class="rule-num">1</div><div><div class="rule-title">Duplicate SSID Detection</div><div class="rule-desc">Flags any two networks broadcasting the same name with different MAC addresses as suspicious.</div></div></div>
+      <div class="rule"><div class="rule-num">2</div><div><div class="rule-title">MAC Vendor Prefix Check</div><div class="rule-desc">Compares OUI (first 3 bytes of MAC) against a vendor database. Mismatches on the same SSID indicate spoofing.</div></div></div>
+      <div class="rule"><div class="rule-num">3</div><div><div class="rule-title">Security Mismatch Analysis</div><div class="rule-desc">Detects when one SSID instance uses WPA2/WPA3 while another is Open or WEP — a classic evil twin lure.</div></div></div>
+      <div class="rule"><div class="rule-num">4</div><div><div class="rule-title">Enterprise False Positive Guard</div><div class="rule-desc">Recognises dual-band and multi-AP deployments to avoid flagging legitimate enterprise infrastructure.</div></div></div>
+    </div>
+  </div>
+</section>
+
+<section class="how" id="how">
+  <div class="sec-label">Process</div>
+  <h2 class="sec-title">Four steps, <em>instant results</em></h2>
+  <p class="sec-sub">TwinGuard completes a full scan and analysis in under a second on most machines.</p>
+  <div class="steps-row">
+    <div class="step-item"><div class="step-num">1</div><div class="step-title">Click Scan</div><div class="step-desc">Trigger a request to the local Flask server running on port 5000 from your browser.</div></div>
+    <div class="step-item"><div class="step-num">2</div><div class="step-title">WLAN Query</div><div class="step-desc">Backend executes netsh wlan show networks, parsing all visible SSIDs, BSSIDs, channels, and security types.</div></div>
+    <div class="step-item"><div class="step-num">3</div><div class="step-title">Rule Engine</div><div class="step-desc">Each network is classified using 4 detection rules. Results returned as structured JSON to the frontend.</div></div>
+    <div class="step-item"><div class="step-num">4</div><div class="step-title">Alert &amp; Review</div><div class="step-desc">Dashboard renders color-coded results. Threats trigger an immediate modal so you can act before connecting.</div></div>
+  </div>
+</section>
+
+<section class="cta">
+  <div class="cta-inner">
+    <h2>Protect your <em>network</em> today</h2>
+    <p>TwinGuard runs entirely on your machine. No signup, no cloud. Open the scanner and see what's broadcasting around you.</p>
+    <a href="/scanner" class="btn-primary"><i class="fa-solid fa-radar"></i> Launch TwinGuard Scanner</a>
+  </div>
+</section>
+
+<footer>
+  <a href="/scanner" class="footer-logo">Twin<span>Guard</span></a>
+
+</footer>
+
+</body>
+</html>
