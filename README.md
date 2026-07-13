@@ -251,19 +251,6 @@ All detection is performed **locally** on the user's machine.
 
 ---
 
-
-
-
-# 👩‍💻 Developer
-
-**Krishna Priya**
-
-Computer Science Engineering Student
-
-Cybersecurity & AI Enthusiast
-
----
-
 # ⭐ Support
 
 If you found this project useful,
