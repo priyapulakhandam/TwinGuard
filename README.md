@@ -73,8 +73,6 @@ TwinGuard
 │      landing.html
 │      index.html
 │
-├── static/
-│
 └── README.md
 ```
 
